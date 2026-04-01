@@ -1,6 +1,13 @@
 "use client";
 import React, { useState } from "react";
-import { Lock, Eye, EyeOff, CheckCircle2, Circle } from "lucide-react";
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Circle,
+  MoveLeft,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { changePasswordSchema } from "@/components/utils/schema/auth-schema";
@@ -9,6 +16,7 @@ import toast from "react-hot-toast";
 import { updatePassword } from "@/app/api/apiRequests";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import Link from "next/link";
 
 export interface INewPassword {
   currentPassword: string;
@@ -77,6 +85,9 @@ const ConfirmPassword: React.FC = () => {
       <div className="w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         {/* Header Section */}
         <div className="p-6 sm:p-8 border-b border-slate-50 text-center">
+          <Link href="/">
+            <MoveLeft />
+          </Link>
           <div className="w-14 h-14 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7" />
           </div>

@@ -41,32 +41,32 @@ const NavigationItems: INavItem[] = [
   {
     icon: <LayoutDashboard size={18} />,
     children: "Dashboard",
-    url: "/dashboard",
+    url: "/",
   },
   {
     icon: <Calculator size={18} />,
     children: "Cashier",
-    url: "/dashboard/cashier",
+    url: "/cashier",
   },
   {
     icon: <ShoppingBag size={18} />,
     children: "Orders",
-    url: "/dashboard/orders",
+    url: "/orders",
   },
   {
     icon: <UtensilsCrossed size={18} />,
     children: "Menu & Tables",
-    url: "/dashboard/menuandtables",
+    url: "/menuandtables",
   },
   {
     icon: <ClipboardList size={18} />,
     children: "Reports",
-    url: "/dashboard/reports",
+    url: "/reports",
   },
   {
     icon: <Settings size={18} />,
     children: "Settings",
-    url: "/dashboard/settings",
+    url: "/settings",
   },
 ];
 export default function DashboardLayout({ children }: { children: ReactNode }) {
