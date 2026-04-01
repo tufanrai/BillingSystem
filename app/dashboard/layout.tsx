@@ -18,11 +18,23 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 import HoC from "./hoc/HoC";
+import {
+  ContextProvider,
+  UserContext,
+} from "@/components/utils/Provider/ContextProvider";
+import { useContext } from "react";
 
 interface INavItem {
   icon: React.ReactNode;
   children: string;
   url: string;
+}
+
+interface IUser {
+  name: string;
+  email: string;
+  id: string;
+  role: string;
 }
 
 const NavigationItems: INavItem[] = [
@@ -61,46 +73,51 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <HoC>
-      <div className="h-screen flex bg-gray-100">
-        {/* Sidebar */}
-        <aside
-          className={`fix md:static z-40 top-0 left-0 min-h-screen w-64 bg-white border-r transform ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0 transition-transform duration-200`}
-        >
-          <Sidebar />
-        </aside>
+    <ContextProvider>
+      <HoC>
+        <div className="h-screen flex bg-gray-100">
+          {/* Sidebar */}
+          <aside
+            className={`fix md:static z-40 top-0 left-0 min-h-screen w-64 bg-white border-r transform ${
+              sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } md:translate-x-0 transition-transform duration-200`}
+          >
+            <Sidebar />
+          </aside>
 
-        {/* Overlay */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/30 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+          {/* Overlay */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/30 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
 
-        {/* Main */}
-        <div className="w-full flex-1 flex flex-col">
-          {/* Header */}
-          <header className="bg-white border-b px-4 py-3 flex items-center gap-3">
-            <button className="md:hidden" onClick={() => setSidebarOpen(true)}>
-              <Menu />
-            </button>
+          {/* Main */}
+          <div className="w-full flex-1 flex flex-col">
+            {/* Header */}
+            <header className="bg-white border-b px-4 py-3 flex items-center gap-3">
+              <button
+                className="md:hidden"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu />
+              </button>
 
-            <div>
-              <h1 className="font-semibold text-lg text-neutral-800">
-                Dashboard
-              </h1>
-              <p className="text-xs text-gray-500">Sunday, March 29, 2026</p>
-            </div>
-          </header>
+              <div>
+                <h1 className="font-semibold text-lg text-neutral-800">
+                  Dashboard
+                </h1>
+                <p className="text-xs text-gray-500">Sunday, March 29, 2026</p>
+              </div>
+            </header>
 
-          {/* Page Content */}
-          <main className="p-4 overflow-y-auto">{children}</main>
+            {/* Page Content */}
+            <main className="p-4 overflow-y-auto">{children}</main>
+          </div>
         </div>
-      </div>
-    </HoC>
+      </HoC>
+    </ContextProvider>
   );
 }
 
@@ -108,6 +125,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
 function Sidebar() {
   const navigate = useRouter();
+  const userDetail = useContext(UserContext);
 
   // Logout handler
   const onLogOut = () => {
@@ -116,6 +134,8 @@ function Sidebar() {
     toast.success("user logged out successfully");
     navigate.replace("/auth/login");
   };
+
+  const [user] = useState<IUser>(userDetail);
   return (
     <div className="flex flex-col min-h-screen">
       {/* Logo */}
@@ -135,8 +155,8 @@ function Sidebar() {
           <User size={18} className="text-orange-500" />
         </div>
         <div>
-          <p className="text-sm font-medium text-neutral-800">Admin</p>
-          <p className="text-xs text-gray-500">admin@example.com</p>
+          <p className="text-sm font-medium text-neutral-800">{user.name}</p>
+          <p className="text-xs text-gray-500">{user.email}</p>
         </div>
       </div>
 

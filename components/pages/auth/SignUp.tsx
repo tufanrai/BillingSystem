@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Eye, EyeOff, Utensils, Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { signUpSchema } from "@/utils/schema/auth-schema";
+import { signUpSchema } from "@/components/utils/schema/auth-schema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { SignUpUser } from "@/app/api/apiRequests";
 import { useRouter } from "next/navigation";

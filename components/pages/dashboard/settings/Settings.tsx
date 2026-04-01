@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   User,
   Sun,
@@ -14,6 +14,7 @@ import {
   FileDown,
   Trash2,
 } from "lucide-react";
+import { UserContext } from "@/components/utils/Provider/ContextProvider";
 
 // --- Types ---
 interface SystemInfo {
@@ -22,12 +23,17 @@ interface SystemInfo {
   environment: "Production" | "Development" | "Staging";
 }
 
+// --- Input form ---
+
 const SettingsPage: React.FC = () => {
   // --- State for Toggles ---
+  const userDetails = useContext(UserContext);
   const [darkMode, setDarkMode] = useState(false);
   const [orderNotifications, setOrderNotifications] = useState(true);
   const [paymentAlerts, setPaymentAlerts] = useState(true);
   const [dailyReports, setDailyReports] = useState(false);
+  const [user] = useState(userDetails);
+  const [hideEdit, setHideEdit] = useState<boolean>(true);
 
   const systemInfo: SystemInfo = {
     version: "1.0.0",
@@ -36,7 +42,7 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8 md:p-12 font-sans text-gray-900">
+    <div className="min-h-screen p-4 sm:p-8 md:p-12 font-sans text-gray-900">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* === Profile Settings === */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -51,28 +57,66 @@ const SettingsPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <div className="p-6 space-y-6">
-            <div>
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Name
-              </label>
-              <p className="text-lg font-semibold mt-1">Admin</p>
+          {user && (
+            <div
+              onDoubleClick={() => setHideEdit(!hideEdit)}
+              className="p-6 space-y-6"
+            >
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Name
+                </label>
+                {hideEdit ? (
+                  <p className="text-lg font-semibold mt-1">{user.name}</p>
+                ) : (
+                  <input
+                    defaultValue={user.name}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
+                  />
+                )}
+              </div>
+              <div className="pt-4 border-t border-gray-50">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Email
+                </label>
+                {hideEdit ? (
+                  <p className="text-lg font-semibold mt-1">{user.email}</p>
+                ) : (
+                  <input
+                    defaultValue={user.email}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
+                  />
+                )}
+              </div>
+              <div className="pt-4 border-t border-gray-50">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Role
+                </label>
+                {hideEdit ? (
+                  <p className="text-lg font-semibold mt-1 text-gray-700">
+                    {user.role}
+                  </p>
+                ) : (
+                  <input
+                    defaultValue={user.role}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
+                  />
+                )}
+              </div>
+              <div>
+                {hideEdit ? (
+                  ""
+                ) : (
+                  <button
+                    type="submit"
+                    className={`w-full bg-orange-500 ease duration-200 hover:bg-orange-600 text-white py-2.5 rounded-xl font-medium transition duration-200`}
+                  >
+                    Save
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="pt-4 border-t border-gray-50">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Email
-              </label>
-              <p className="text-lg font-semibold mt-1">admin@example.com</p>
-            </div>
-            <div className="pt-4 border-t border-gray-50">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Role
-              </label>
-              <p className="text-lg font-semibold mt-1 text-gray-700">
-                Administrator
-              </p>
-            </div>
-          </div>
+          )}
         </section>
 
         {/* === Appearance === */}
