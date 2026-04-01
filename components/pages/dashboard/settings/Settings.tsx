@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { UserContext } from "@/components/utils/Provider/ContextProvider";
+import Link from "next/link";
 
 // --- Types ---
 interface SystemInfo {
@@ -32,7 +33,7 @@ const SettingsPage: React.FC = () => {
   const [orderNotifications, setOrderNotifications] = useState(true);
   const [paymentAlerts, setPaymentAlerts] = useState(true);
   const [dailyReports, setDailyReports] = useState(false);
-  const [user] = useState(userDetails);
+  const user = userDetails;
   const [hideEdit, setHideEdit] = useState<boolean>(true);
 
   const systemInfo: SystemInfo = {
@@ -212,6 +213,7 @@ const SettingsPage: React.FC = () => {
             <ActionButton
               label="Change Password"
               icon={<Key className="w-4 h-4" />}
+              url="/auth/confirmPassword"
             />
             <ActionButton
               label="Two-Factor Authentication"
@@ -312,8 +314,9 @@ const NotificationItem = ({ title, desc, checked, onChange }: any) => (
   </div>
 );
 
-const ActionButton = ({ label, icon, variant = "default" }: any) => (
-  <button
+const ActionButton = ({ label, icon, variant = "default", url = "" }: any) => (
+  <Link
+    href={url}
     className={`w-full flex items-center justify-between px-5 py-3 rounded-xl border transition-all active:scale-[0.98] ${
       variant === "danger"
         ? "border-red-100 bg-white text-red-600 hover:bg-red-50"
@@ -322,7 +325,7 @@ const ActionButton = ({ label, icon, variant = "default" }: any) => (
   >
     <span className="text-sm font-bold">{label}</span>
     {icon}
-  </button>
+  </Link>
 );
 
 export default SettingsPage;

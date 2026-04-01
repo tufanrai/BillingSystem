@@ -23,7 +23,7 @@ export const signUpSchema = yup.object({
   password: yup
     .string()
     .required("please enter a password")
-    .min(6, "your password must contain at least 6 characters")
+    .min(8, "your password must contain at least 8 characters")
     .matches(/\d/, "your password must contain at least on digit")
     .matches(
       /[!@#]/,
@@ -48,4 +48,31 @@ export const menuItemSchema = yup.object({
   description: yup.string(),
   price: yup.number().required("please enter the price of the food item"),
   category: yup.string().required("please enter the category of the food"),
+});
+
+/*
+  User form schema.
+*/
+// Minor details
+export const userShcema = yup.object({
+  name: yup.string(),
+  email: yup.string().email("please enter a valid email"),
+});
+
+// Password
+export const changePasswordSchema = yup.object({
+  currentPassword: yup.string().required("please enter your password"),
+  newPassword: yup
+    .string()
+    .required("please enter your new password")
+    .matches(/\d/, "your password must contain at least on digit")
+    .matches(
+      /[!@#$%*&]/,
+      "your password must contain at least one of these (!@#$%*&) special character",
+    )
+    .min(8, "your password must me of at least 8 characters"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("newPassword")], "your password did not match")
+    .required("please re-enter the new passwrord"),
 });

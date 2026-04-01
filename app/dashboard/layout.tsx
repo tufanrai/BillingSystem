@@ -135,7 +135,13 @@ function Sidebar() {
     navigate.replace("/auth/login");
   };
 
-  const [user] = useState<IUser>(userDetail);
+  const user: IUser = userDetail ?? {
+    name: "Guest",
+    email: "guest@restaurantpos.local",
+    id: "",
+    role: "guest",
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Logo */}

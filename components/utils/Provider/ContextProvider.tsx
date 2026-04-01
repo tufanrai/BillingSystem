@@ -9,21 +9,30 @@ interface User {
   role: string;
 }
 
-const user = Cookies.get("user")!;
+type UserContextType = User | null;
 
-export const UserContext = createContext<User>(user ? JSON.parse(user!)! : "");
+export const UserContext = createContext<UserContextType>(null);
 
 export const ContextProvider = ({
   children,
 }: Readonly<{ children: React.ReactNode }>) => {
-  const [User, setUser] = useState<User>(JSON.parse(user!));
+  const [user, setUser] = useState<UserContextType>(null);
 
   useEffect(() => {
     const rawUser = Cookies.get("user");
-    if (rawUser) {
-      setUser(JSON.parse(rawUser)!);
+    if (!rawUser) {
+      setUser(null);
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(rawUser) as User;
+      setUser(parsedUser);
+    } catch (error) {
+      console.warn("Invalid user cookie, resetting user context:", error);
+      setUser(null);
     }
   }, []);
 
-  return <UserContext.Provider value={User}>{children}</UserContext.Provider>;
+  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
 };
