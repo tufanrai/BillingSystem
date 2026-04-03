@@ -133,7 +133,7 @@ const FinanceCards: IFinanceCard[] = [
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4 md:p-6 lg:p-8">
       {/* Top button cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {ButtonCards &&
@@ -190,7 +190,7 @@ export default function DashboardPage() {
         title="Recent Orders"
         subtitle="Latest completed transactions"
         action={
-          <button className="text-sm border px-3 py-1 rounded-md">
+          <button className="text-sm text-white bg-orange-500 hover:bg-orange-600 px-3 py-1 rounded-md cursor-pointer">
             View All →
           </button>
         }
@@ -217,11 +217,11 @@ function Card({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border p-4">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="font-medium">{title}</h3>
-          <p className="text-xs text-gray-500">{subtitle}</p>
+          <h3 className="font-semibold text-slate-800">{title}</h3>
+          <p className="text-xs text-slate-500">{subtitle}</p>
         </div>
         {action}
       </div>
@@ -242,12 +242,14 @@ function ButtonCard({
   url: string;
 }) {
   return (
-    <a href={url}>
-      <div className="bg-white rounded-xl shadow-sm border p-4 flex items-center gap-2 justify-start ease duration-200 hover:scale-101 hover:shadow-md">
+    <a href={url} className="group">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
         <div>{icon}</div>
         <div>
-          <p className="text-xs text-gray-500">{title}</p>
-          <h3 className="font-medium text-neutral-800 text-lg">{subtitle}</h3>
+          <p className="text-xs text-slate-500 group-hover:text-slate-700">
+            {title}
+          </p>
+          <h3 className="font-semibold text-slate-900">{subtitle}</h3>
         </div>
       </div>
     </a>
@@ -268,15 +270,15 @@ function FinanceCard({
   metaInfo: string;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border p-4 flex flex-col items-between gap-2 justify-center ease duration-200 hover:scale-101 hover:shadow-md">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col justify-between gap-2 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
       <div className="flex items-center justify-between mb-4">
         {icon}
         {tag}
       </div>
-      <div className="flex flex-col items-start justify-between gap-4">
-        <p className="text-xs text-gray-500">{title}</p>
-        <h3 className="font-medium text-neutral-800 text-lg">{subtitle}</h3>
-        <p className="text-xs text-gray-400">{metaInfo}</p>
+      <div className="flex flex-col items-start justify-between gap-2">
+        <p className="text-xs text-slate-500">{title}</p>
+        <h3 className="font-semibold text-slate-900 text-lg">{subtitle}</h3>
+        <p className="text-xs text-slate-500">{metaInfo}</p>
       </div>
     </div>
   );
@@ -286,7 +288,7 @@ function FinanceCard({
 
 function PlaceholderChart() {
   return (
-    <div className="h-40 flex items-center justify-center text-gray-400 text-sm">
+    <div className="h-40 flex items-center justify-center text-muted text-sm">
       Coming soon...
     </div>
   );
@@ -294,7 +296,7 @@ function PlaceholderChart() {
 
 function PiePlaceholder() {
   return (
-    <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
+    <div className="h-48 flex items-center justify-center text-muted text-sm">
       Coming soon...
     </div>
   );

@@ -54,7 +54,7 @@ export const menuItemSchema = yup.object({
   User form schema.
 */
 // Minor details
-export const userShcema = yup.object({
+export const userSchema = yup.object({
   name: yup.string(),
   email: yup.string().email("please enter a valid email"),
 });

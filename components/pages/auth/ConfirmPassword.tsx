@@ -240,14 +240,8 @@ const ConfirmPassword: React.FC = () => {
           {/* Actions */}
           <div className="flex flex-col-reverse sm:flex-row items-center gap-3 pt-4">
             <button
-              type="reset"
-              className={`px-3 border border-orange-500 ease duration-200 hover:bg-orange-600 hover:text-white text-orange-500 py-2.5 rounded-xl font-medium transition duration-200 cursor-pointer`}
-            >
-              Cancel
-            </button>
-            <button
               type="submit"
-              className={`px-3 bg-orange-500 ease duration-200 hover:bg-orange-600 text-white py-2.5 rounded-xl font-medium transition duration-200 cursor-pointer`}
+              className={`w-full px-3 bg-orange-500 ease duration-200 hover:bg-orange-600 text-white py-2.5 rounded-xl font-medium transition duration-200 cursor-pointer`}
             >
               Update Password
             </button>

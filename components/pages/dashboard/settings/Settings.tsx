@@ -1,9 +1,7 @@
 "use client";
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import {
   User,
-  Sun,
-  Info,
   Bell,
   Lock,
   Database,
@@ -13,39 +11,114 @@ import {
   RefreshCcw,
   FileDown,
   Trash2,
+  Loader,
 } from "lucide-react";
-import { UserContext } from "@/components/utils/Provider/ContextProvider";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { userSchema } from "@/components/utils/schema/auth-schema";
+import { updateUserCredentails } from "@/app/api/apiRequests";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
-// --- Types ---
 interface SystemInfo {
   version: string;
   lastUpdated: string;
   environment: "Production" | "Development" | "Staging";
 }
 
-// --- Input form ---
+export interface IUserSchema {
+  email?: string;
+  name?: string;
+}
+
+const NotificationItem = ({ title, desc, checked, onChange }: any) => (
+  <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl">
+    <div>
+      <p className="font-bold text-gray-800">{title}</p>
+      <p className="text-xs text-gray-500 mt-1">{desc}</p>
+    </div>
+    <button
+      onClick={() => onChange(!checked)}
+      className={`w-12 h-6 rounded-full transition-colors ${checked ? "bg-orange-500" : "bg-gray-200"}`}
+      aria-label={`${checked ? "Disable" : "Enable"} ${title}`}
+    >
+      <span
+        className={`block h-4 w-4 bg-white rounded-full transition-transform ${checked ? "translate-x-6" : "translate-x-1"}`}
+      />
+    </button>
+  </div>
+);
+
+const ActionButton = ({ label, icon, url = "", variant = "default" }: any) => {
+  const style =
+    variant === "danger"
+      ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+      : "bg-white border-gray-100 text-gray-700 hover:bg-gray-50";
+
+  return (
+    <Link
+      href={url || "#"}
+      className={`w-full flex items-center justify-between px-5 py-3 rounded-xl border ${style} transition`}
+    >
+      <span className="font-bold text-sm">{label}</span>
+      {icon}
+    </Link>
+  );
+};
 
 const SettingsPage: React.FC = () => {
-  // --- State for Toggles ---
-  const userDetails = useContext(UserContext);
-  const [darkMode, setDarkMode] = useState(false);
-  const [orderNotifications, setOrderNotifications] = useState(true);
-  const [paymentAlerts, setPaymentAlerts] = useState(true);
-  const [dailyReports, setDailyReports] = useState(false);
-  const user = userDetails;
-  const [hideEdit, setHideEdit] = useState<boolean>(true);
-
+  const navigate = useRouter();
+  const [editingProfile, setEditingProfile] = useState<boolean>(false);
+  const [orderNotifications, setOrderNotifications] = useState<boolean>(true);
+  const [paymentAlerts, setPaymentAlerts] = useState<boolean>(true);
+  const [dailyReports, setDailyReports] = useState<boolean>(false);
+  const [userDetails, setUserDetails] = useState({
+    name: "Guest",
+    email: "guest@example.com",
+  });
   const systemInfo: SystemInfo = {
     version: "1.0.0",
     lastUpdated: "March 11, 2026",
     environment: "Production",
   };
 
+  // mutate data
+  const { mutate, isPending } = useMutation({
+    mutationFn: updateUserCredentails,
+    onSuccess: (data) => {
+      toast.success(data.message);
+      Cookies.set("user", JSON.stringify(data?.data.user));
+      setUserDetails(data?.data);
+      navigate.refresh();
+      reset();
+    },
+    onError: (err) => {
+      toast.error(err.message);
+      reset();
+    },
+  });
+
+  // Form input valdiation
+  const {
+    reset,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(userSchema),
+  });
+
+  // Submit function
+  const Submit = (data: IUserSchema) => {
+    mutate(data);
+  };
+
   return (
-    <div className="min-h-screen p-4 sm:p-8 md:p-12 font-sans text-gray-900">
+    <div className="min-h-screen p-4 sm:p-8 md:p-12 font-sans text-gray-900 bg-gray-100">
       <div className="max-w-3xl mx-auto space-y-6">
-        {/* === Profile Settings === */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-50 flex items-center gap-4">
             <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center">
@@ -54,114 +127,90 @@ const SettingsPage: React.FC = () => {
             <div>
               <h2 className="text-xl font-bold">Profile Settings</h2>
               <p className="text-sm text-gray-500">
-                Manage your account preferences
+                Manage your account details
               </p>
             </div>
           </div>
-          {user && (
-            <div
-              onDoubleClick={() => setHideEdit(!hideEdit)}
-              className="p-6 space-y-6"
+          <div className="p-6 space-y-4">
+            <form
+              onSubmit={handleSubmit(Submit)}
+              onDoubleClick={() => setEditingProfile(!editingProfile)}
+              className="grid gap-3 sm:grid-cols-2"
             >
               <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">
                   Name
-                </label>
-                {hideEdit ? (
-                  <p className="text-lg font-semibold mt-1">{user.name}</p>
-                ) : (
-                  <input
-                    defaultValue={user.name}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
-                  />
-                )}
-              </div>
-              <div className="pt-4 border-t border-gray-50">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Email
-                </label>
-                {hideEdit ? (
-                  <p className="text-lg font-semibold mt-1">{user.email}</p>
-                ) : (
-                  <input
-                    defaultValue={user.email}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
-                  />
-                )}
-              </div>
-              <div className="pt-4 border-t border-gray-50">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Role
-                </label>
-                {hideEdit ? (
-                  <p className="text-lg font-semibold mt-1 text-gray-700">
-                    {user.role}
-                  </p>
-                ) : (
-                  <input
-                    defaultValue={user.role}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
-                  />
-                )}
-              </div>
-              <div>
-                {hideEdit ? (
-                  ""
-                ) : (
-                  <button
-                    type="submit"
-                    className={`w-full bg-orange-500 ease duration-200 hover:bg-orange-600 text-white py-2.5 rounded-xl font-medium transition duration-200`}
-                  >
-                    Save
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* === Appearance === */}
-        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-50 flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center">
-              <Sun className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Appearance</h2>
-              <p className="text-sm text-gray-500">
-                Customize the look and feel
-              </p>
-            </div>
-          </div>
-          <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <Sun className="w-5 h-5 text-gray-400" />
-                <div>
-                  <p className="font-bold">Dark Mode</p>
-                  <p className="text-xs text-gray-500">
-                    Switch between light and dark theme
-                  </p>
-                </div>
-              </div>
-              <Toggle checked={darkMode} onChange={setDarkMode} />
-            </div>
-            {/* Theme Note (Callout) */}
-            <div className="flex gap-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
-              <Info className="w-5 h-5 text-blue-500 shrink-0" />
-              <div>
-                <p className="text-sm font-bold text-blue-900">Theme Note</p>
-                <p className="text-xs text-blue-700 leading-relaxed mt-1">
-                  Dark mode is currently in development and will be available in
-                  the next update. The toggle will save your preference for when
-                  it's ready.
                 </p>
+                {editingProfile ? (
+                  <>
+                    <input
+                      type="text"
+                      {...register("name")}
+                      defaultValue={userDetails?.name}
+                      className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                    {errors.name && errors.name.message ? (
+                      <p className="text-xs text-red-500 text-start py-3">
+                        {errors.name.message}
+                      </p>
+                    ) : (
+                      ""
+                    )}
+                  </>
+                ) : (
+                  <p className="mt-1 text-lg font-semibold text-gray-800">
+                    {userDetails?.name ?? "Guest User"}
+                  </p>
+                )}
               </div>
-            </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">
+                  Email
+                </p>
+                {editingProfile ? (
+                  <>
+                    <input
+                      {...register("email")}
+                      defaultValue={userDetails?.email}
+                      type="email"
+                      className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                    {errors.email && errors.email.message ? (
+                      <p className="text-xs text-red-500 text-start py-3">
+                        {errors.email.message}
+                      </p>
+                    ) : (
+                      ""
+                    )}
+                  </>
+                ) : (
+                  <p className="mt-1 text-lg font-semibold text-gray-800">
+                    {userDetails?.email ?? "user@example.com"}
+                  </p>
+                )}
+              </div>
+              <div>
+                {editingProfile ? (
+                  <div className="flex gap-2">
+                    <button
+                      disabled={isPending}
+                      className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 flex items-center justify-center gap-2"
+                    >
+                      {isPending ? (
+                        <span>
+                          <Loader className="w-6 h-6 animate-spin" /> Saving...
+                        </span>
+                      ) : (
+                        "Save"
+                      )}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </form>
           </div>
         </section>
 
-        {/* === Notifications === */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-50 flex items-center gap-4">
             <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center">
@@ -196,7 +245,6 @@ const SettingsPage: React.FC = () => {
           </div>
         </section>
 
-        {/* === Security === */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-50 flex items-center gap-4">
             <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center">
@@ -204,9 +252,7 @@ const SettingsPage: React.FC = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold">Security</h2>
-              <p className="text-sm text-gray-500">
-                Manage security preferences
-              </p>
+              <p className="text-sm text-gray-500">Manage security settings</p>
             </div>
           </div>
           <div className="p-6 space-y-3">
@@ -226,7 +272,6 @@ const SettingsPage: React.FC = () => {
           </div>
         </section>
 
-        {/* === Data Management === */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-50 flex items-center gap-4">
             <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center">
@@ -235,7 +280,7 @@ const SettingsPage: React.FC = () => {
             <div>
               <h2 className="text-xl font-bold">Data Management</h2>
               <p className="text-sm text-gray-500">
-                Manage your application data
+                Data operations and backups
               </p>
             </div>
           </div>
@@ -256,24 +301,23 @@ const SettingsPage: React.FC = () => {
           </div>
         </section>
 
-        {/* === System Information === */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-8">
             <h2 className="text-xl font-bold mb-6">System Information</h2>
-            <div className="space-y-4 text-sm">
-              <div className="flex justify-between items-center">
+            <div className="space-y-4 text-sm text-gray-700">
+              <div className="flex justify-between">
                 <span className="text-gray-500">Version:</span>
                 <span className="font-mono font-bold">
                   {systemInfo.version}
                 </span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between">
                 <span className="text-gray-500">Last Updated:</span>
-                <span className="font-medium">{systemInfo.lastUpdated}</span>
+                <span>{systemInfo.lastUpdated}</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between">
                 <span className="text-gray-500">Environment:</span>
-                <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-bold">
+                <span className="px-2 py-1 bg-gray-100 rounded-md text-xs font-semibold">
                   {systemInfo.environment}
                 </span>
               </div>
@@ -284,48 +328,5 @@ const SettingsPage: React.FC = () => {
     </div>
   );
 };
-
-// --- Helper Components ---
-
-const Toggle = ({
-  checked,
-  onChange,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) => (
-  <button
-    onClick={() => onChange(!checked)}
-    className={`w-12 h-6 rounded-full transition-colors relative focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${checked ? "bg-orange-500" : "bg-gray-200"}`}
-  >
-    <div
-      className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${checked ? "translate-x-6" : ""}`}
-    />
-  </button>
-);
-
-const NotificationItem = ({ title, desc, checked, onChange }: any) => (
-  <div className="flex items-center justify-between p-4 bg-gray-50/50 border border-gray-100 rounded-xl">
-    <div>
-      <p className="font-bold text-gray-800">{title}</p>
-      <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-    </div>
-    <Toggle checked={checked} onChange={onChange} />
-  </div>
-);
-
-const ActionButton = ({ label, icon, variant = "default", url = "" }: any) => (
-  <Link
-    href={url}
-    className={`w-full flex items-center justify-between px-5 py-3 rounded-xl border transition-all active:scale-[0.98] ${
-      variant === "danger"
-        ? "border-red-100 bg-white text-red-600 hover:bg-red-50"
-        : "border-gray-100 bg-white hover:bg-gray-50 text-gray-700"
-    }`}
-  >
-    <span className="text-sm font-bold">{label}</span>
-    {icon}
-  </Link>
-);
 
 export default SettingsPage;

@@ -2,6 +2,7 @@ import { ILogin } from "@/components/pages/auth/Login";
 import { axiosInstance } from "./axiosInstance";
 import { ISignUp } from "@/components/pages/auth/SignUp";
 import { INewPassword } from "@/components/pages/auth/ConfirmPassword";
+import { IUserSchema } from "@/components/pages/dashboard/settings/Settings";
 
 // Login request
 export const LogUser = async (data: ILogin) => {
@@ -24,7 +25,7 @@ export const SignUpUser = async (data: ISignUp) => {
 };
 
 // update user
-export const updateUserCredentails = async (data: any) => {
+export const updateUserCredentails = async (data: IUserSchema) => {
   try {
     const response = await axiosInstance.put("/auth/profile", data);
     return response.data;
