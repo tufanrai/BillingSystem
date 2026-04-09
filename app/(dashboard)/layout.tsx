@@ -46,41 +46,41 @@ const NavigationItems: INavItem[] = [
   { icon: <Settings size={18} />, children: "Settings", url: "/settings" },
 ];
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+function DashboardLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <HoC>
-      <div className="h-screen flex bg-gray-100 text-gray-900">
-        <aside
-          className={`fixed md:static z-40 top-0 left-0 min-h-screen w-64 border-r bg-white border-gray-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-200`}
-        >
-          <Sidebar />
-        </aside>
+    <div className="h-screen flex bg-gray-100 text-gray-900">
+      <aside
+        className={`fixed md:static z-40 top-0 left-0 min-h-screen w-64 border-r bg-white border-gray-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-200`}
+      >
+        <Sidebar />
+      </aside>
 
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/30 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        <div className="w-full flex-1 flex flex-col">
-          <header className="px-4 py-3 flex items-center gap-3 border-b bg-white border-gray-200">
-            <button className="md:hidden" onClick={() => setSidebarOpen(true)}>
-              <Menu />
-            </button>
-            <div>
-              <h1 className="font-semibold text-lg">Dashboard</h1>
-              <p className="text-xs text-gray-500">Sunday, March 29, 2026</p>
-            </div>
-          </header>
-          <main className="p-4 overflow-y-auto">{children}</main>
-        </div>
+      <div className="w-full flex-1 flex flex-col">
+        <header className="px-4 py-3 flex items-center gap-3 border-b bg-white border-gray-200">
+          <button className="md:hidden" onClick={() => setSidebarOpen(true)}>
+            <Menu />
+          </button>
+          <div>
+            <h1 className="font-semibold text-lg">Dashboard</h1>
+            <p className="text-xs text-gray-500">Sunday, March 29, 2026</p>
+          </div>
+        </header>
+        <main className="p-4 overflow-y-auto">{children}</main>
       </div>
-    </HoC>
+    </div>
   );
 }
+
+export default HoC(DashboardLayout);
 
 function Sidebar() {
   const navigate = useRouter();

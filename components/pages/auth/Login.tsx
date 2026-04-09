@@ -27,10 +27,9 @@ const Login = () => {
     if (token) {
       const decode = jwtDecode(token!);
 
-      console.log(decode.exp, Math.floor(Date.now() / 1000));
       // check expiry date
       if (decode.exp && decode.exp > Math.floor(Date.now() / 1000)) {
-        navigate.replace("/dashboard");
+        navigate.replace("/");
       }
     }
   }, []);
@@ -45,7 +44,7 @@ const Login = () => {
       Cookies.set("user", JSON.stringify(data.data.user));
       reset();
       setTimeout(() => {
-        navigate.replace("/dashboard");
+        navigate.replace("/");
       }, 1000);
     },
     onError: (err: any) => {

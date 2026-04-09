@@ -11,11 +11,11 @@ import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 
 export interface ISignUp {
-  fullName: string;
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
-  restaurant: string;
+  restaurantName: string;
 }
 
 const SignUp = () => {
@@ -33,7 +33,7 @@ const SignUp = () => {
       Cookies.set("token", data.data.token);
       Cookies.set("user", JSON.stringify(data.data.user));
       reset();
-      navigate.replace("/dashboard");
+      navigate.replace("/auth/login");
     },
     onError: (err: any) => {
       toast.error(err);
@@ -85,13 +85,13 @@ const SignUp = () => {
             </label>
             <input
               type="text"
-              {...register("fullName")}
+              {...register("name")}
               placeholder="Jhon Doe"
               className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
             />
-            {errors.fullName && errors.fullName.message ? (
+            {errors.name && errors.name.message ? (
               <p className="text-xs text-red-500 text-start py-2">
-                {errors.fullName.message}
+                {errors.name.message}
               </p>
             ) : (
               ""
@@ -105,13 +105,13 @@ const SignUp = () => {
             </label>
             <input
               type="text"
-              {...register("restaurant")}
+              {...register("restaurantName")}
               placeholder="Jhon Doe"
               className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
             />
-            {errors.restaurant && errors.restaurant.message ? (
+            {errors.restaurantName && errors.restaurantName.message ? (
               <p className="text-xs text-red-500 text-start py-2">
-                {errors.restaurant.message}
+                {errors.restaurantName.message}
               </p>
             ) : (
               ""

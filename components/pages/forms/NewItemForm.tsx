@@ -1,12 +1,24 @@
 "use client";
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
+import { foodItemSchema } from "@/components/utils/schema/auth-schema";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import toast from "react-hot-toast";
+import Cookies from "js-cookie";
+import { socketManager } from "../../../app/api/socketInstance";
 
 interface AddItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   // In a real app, you'd pass a submit handler here
   // onSubmit: (data: any) => void;
+}
+
+export interface IFoodItem {
+  itemName: string;
+  price: number;
+  category: string;
 }
 
 const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
@@ -20,6 +32,22 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
   }, [onClose]);
 
   if (!isOpen) return null;
+
+  // Form handler
+  const { register, handleSubmit } = useForm({
+    resolver: yupResolver(foodItemSchema),
+  });
+
+  // submit function
+  const submit = (data: IFoodItem) => {
+    const socket = socketManager.socket("/", {
+      auth: {
+        token: Cookies.get("token"),
+      },
+    });
+
+    socket.emit("join", { data });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -45,7 +73,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Form Body */}
-        <form className="p-8 space-y-6" onSubmit={(e) => e.preventDefault()}>
+        <form className="p-8 space-y-6" onSubmit={handleSubmit(submit)}>
           {/* Item Name */}
           <div className="space-y-2">
             <label className="block text-sm font-bold text-slate-700">
@@ -53,7 +81,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
             </label>
             <input
               type="text"
-              required
+              {...register("itemName")}
               placeholder="e.g., Margherita Pizza"
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
             />
@@ -62,12 +90,12 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
           {/* Price */}
           <div className="space-y-2">
             <label className="block text-sm font-bold text-slate-700">
-              Price ($) <span className="text-orange-500">*</span>
+              Price <span className="text-orange-500">*</span>
             </label>
             <input
               type="number"
               step="0.01"
-              required
+              {...register("price")}
               placeholder="e.g., 12.99"
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
             />
@@ -80,21 +108,8 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
             </label>
             <input
               type="text"
-              required
+              {...register("category")}
               placeholder="e.g., Main Course, Dessert, Beverage"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
-            />
-          </div>
-
-          {/* Image URL */}
-          <div className="space-y-2">
-            <label className="block text-sm font-bold text-slate-700">
-              Image URL{" "}
-              <span className="text-slate-400 font-normal">(optional)</span>
-            </label>
-            <input
-              type="url"
-              placeholder="https://example.com/image.jpg"
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-300"
             />
           </div>
@@ -102,7 +117,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
           {/* Footer Actions */}
           <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 mt-10 pt-6 border-t border-slate-50">
             <button
-              type="button"
+              type="reset"
               onClick={onClose}
               className="w-full sm:w-auto px-8 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors border border-slate-100"
             >

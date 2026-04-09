@@ -8,9 +8,7 @@ interface MenuItem {
   name: string;
   price: number;
   category: string;
-  image: string;
 }
-
 interface Table {
   id: number;
   status: "Available" | "Occupied";
@@ -79,24 +77,18 @@ const MenuAndTables: React.FC = () => {
       name: "Margherita Pizza",
       price: 12.99,
       category: "Main Course",
-      image:
-        "https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?auto=format&fit=crop&w=400&q=80",
     },
     {
       id: "2",
       name: "Grilled Chicken",
       price: 15.99,
       category: "Main Course",
-      image:
-        "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=400&q=80",
     },
     {
       id: "3",
       name: "Caesar Salad",
       price: 8.99,
       category: "Appetizer",
-      image:
-        "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=400&q=80",
     },
   ];
 
@@ -163,11 +155,6 @@ const MenuAndTables: React.FC = () => {
                           key={item.id}
                           className="group border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all"
                         >
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-48 object-cover"
-                          />
                           <div className="p-5">
                             <h4 className="font-bold text-gray-900">
                               {item.name}
@@ -176,10 +163,10 @@ const MenuAndTables: React.FC = () => {
                               ${item.price}
                             </p>
                             <div className="flex gap-2 mt-4">
-                              <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                              <button className="cursor-pointer flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                                 <EditIcon /> Edit
                               </button>
-                              <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors">
+                              <button className="cursor-pointer flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors">
                                 <TrashIcon /> Delete
                               </button>
                             </div>
@@ -217,7 +204,7 @@ const MenuAndTables: React.FC = () => {
         </div>
       </div>
       {openForm === true ? (
-        <AddItemModal isOpen onClose={() => console.log("first")} />
+        <AddItemModal isOpen onClose={() => setOpenForm(!openForm)} />
       ) : (
         ""
       )}

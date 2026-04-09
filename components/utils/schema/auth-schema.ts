@@ -14,12 +14,14 @@ export const loginSchema = yup.object({
 
 // Sign up form schema
 export const signUpSchema = yup.object({
-  fullName: yup.string().required("please enter your full name"),
+  name: yup.string().required("please enter your full name"),
   email: yup
     .string()
     .required("please enter your email")
     .email("please enter a valid email"),
-  restaurant: yup.string().required("please enter the name of your restaurant"),
+  restaurantName: yup
+    .string()
+    .required("please enter the name of your restaurant"),
   password: yup
     .string()
     .required("please enter a password")
@@ -75,4 +77,11 @@ export const changePasswordSchema = yup.object({
     .string()
     .oneOf([yup.ref("newPassword")], "your password did not match")
     .required("please re-enter the new passwrord"),
+});
+
+// Food Item form schema
+export const foodItemSchema = yup.object({
+  itemName: yup.string().required("please enter the name of the food"),
+  price: yup.number().required("please enter the price of the food"),
+  category: yup.string().required("please specify the category of the food"),
 });

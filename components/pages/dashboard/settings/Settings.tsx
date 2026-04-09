@@ -75,10 +75,11 @@ const SettingsPage: React.FC = () => {
   const [orderNotifications, setOrderNotifications] = useState<boolean>(true);
   const [paymentAlerts, setPaymentAlerts] = useState<boolean>(true);
   const [dailyReports, setDailyReports] = useState<boolean>(false);
-  const [userDetails, setUserDetails] = useState({
-    name: "Guest",
-    email: "guest@example.com",
-  });
+  const [userDetails, setUserDetails] = useState(
+    JSON.parse(Cookies.get("user") || "{}"),
+  );
+
+  console.log(JSON.parse(Cookies.get("user")!));
   const systemInfo: SystemInfo = {
     version: "1.0.0",
     lastUpdated: "March 11, 2026",
