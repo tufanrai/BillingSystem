@@ -15,7 +15,7 @@ export interface ISignUp {
   email: string;
   password: string;
   confirmPassword: string;
-  restaurantName: string;
+  restaurant: string;
 }
 
 const SignUp = () => {
@@ -30,8 +30,6 @@ const SignUp = () => {
         return;
       }
       toast.success(data.message);
-      Cookies.set("token", data.data.token);
-      Cookies.set("user", JSON.stringify(data.data.user));
       reset();
       navigate.replace("/auth/login");
     },
@@ -105,13 +103,13 @@ const SignUp = () => {
             </label>
             <input
               type="text"
-              {...register("restaurantName")}
+              {...register("restaurant")}
               placeholder="Jhon Doe"
               className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-transparent text-gray-700 placeholder-gray-400"
             />
-            {errors.restaurantName && errors.restaurantName.message ? (
+            {errors.restaurant && errors.restaurant.message ? (
               <p className="text-xs text-red-500 text-start py-2">
-                {errors.restaurantName.message}
+                {errors.restaurant.message}
               </p>
             ) : (
               ""

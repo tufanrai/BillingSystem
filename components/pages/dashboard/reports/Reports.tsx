@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Banknote,
   CreditCard,
@@ -12,6 +12,9 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAllReports } from "@/app/api/apiRequests";
+import toast from "react-hot-toast";
 
 // --- Types ---
 interface FilterOption {
@@ -69,8 +72,19 @@ const ChartPlaceholder: React.FC<{ id: string; color?: string }> = ({
 
 // --- Main Component ---
 const FinancialDashboard: React.FC = () => {
+  const queryClient = useQueryClient;
   const [selectedFilter, setSelectedFilter] =
     useState<FilterOption["value"]>("month");
+
+  // Query data
+  const { data } = useQuery({
+    queryKey: ["Reports"],
+    queryFn: getAllReports,
+  });
+
+  useEffect(() => {
+    if (typeof data === "string") toast.error("You don't have any bills yet");
+  }, [data]);
 
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-8 lg:p-10 font-sans text-slate-900">

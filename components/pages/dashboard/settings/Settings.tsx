@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useDeferredValue, useEffect, useState } from "react";
 import {
   User,
   Bell,
@@ -15,10 +15,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { userSchema } from "@/components/utils/schema/auth-schema";
-import { updateUserCredentails } from "@/app/api/apiRequests";
+import { GetUserData, updateUserCredentails } from "@/app/api/apiRequests";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
@@ -70,30 +70,44 @@ const ActionButton = ({ label, icon, url = "", variant = "default" }: any) => {
 };
 
 const SettingsPage: React.FC = () => {
+  const queryClient = useQueryClient();
   const navigate = useRouter();
   const [editingProfile, setEditingProfile] = useState<boolean>(false);
   const [orderNotifications, setOrderNotifications] = useState<boolean>(true);
   const [paymentAlerts, setPaymentAlerts] = useState<boolean>(true);
   const [dailyReports, setDailyReports] = useState<boolean>(false);
-  const [userDetails, setUserDetails] = useState(
-    JSON.parse(Cookies.get("user") || "{}"),
-  );
+  const [userDetails, setUserDetails] = useState({
+    name: "Guest",
+    email: "guest@gmail.com",
+  });
 
-  console.log(JSON.parse(Cookies.get("user")!));
   const systemInfo: SystemInfo = {
     version: "1.0.0",
     lastUpdated: "March 11, 2026",
     environment: "Production",
   };
 
+  // Query data
+  const { data } = useQuery({
+    queryKey: ["Get Settings data"],
+    queryFn: GetUserData,
+  });
+
+  useEffect(() => {
+    if (data) {
+      setUserDetails(data);
+    }
+  }, [data]);
+
   // mutate data
   const { mutate, isPending } = useMutation({
     mutationFn: updateUserCredentails,
     onSuccess: (data) => {
       toast.success(data.message);
-      Cookies.set("user", JSON.stringify(data?.data.user));
-      setUserDetails(data?.data);
-      navigate.refresh();
+      Cookies.set("user", JSON.stringify(data));
+      queryClient.invalidateQueries({ queryKey: ["Get Settings data"] });
+      setUserDetails(data);
+      setEditingProfile(false);
       reset();
     },
     onError: (err) => {
@@ -160,7 +174,7 @@ const SettingsPage: React.FC = () => {
                   </>
                 ) : (
                   <p className="mt-1 text-lg font-semibold text-gray-800">
-                    {userDetails?.name ?? "Guest User"}
+                    {userDetails.name}
                   </p>
                 )}
               </div>

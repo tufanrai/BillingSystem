@@ -1,16 +1,20 @@
 "use client";
 import React, { useState } from "react";
 import AddItemModal from "../../forms/NewItemForm";
+import { useQuery } from "@tanstack/react-query";
+import { getAllFoodItem, getAllTable } from "@/app/api/apiRequests";
 
 // --- Types ---
 interface MenuItem {
-  id: string;
-  name: string;
+  _id: string;
+  itemName: string;
   price: number;
   category: string;
 }
 interface Table {
-  id: number;
+  _id: number;
+  tableNumber: number;
+  capacity: number;
   status: "Available" | "Occupied";
 }
 
@@ -70,33 +74,23 @@ const MenuAndTables: React.FC = () => {
   );
   const [openForm, setOpenForm] = useState<boolean>(false);
 
-  // Mock Data
-  const menuItems: MenuItem[] = [
-    {
-      id: "1",
-      name: "Margherita Pizza",
-      price: 12.99,
-      category: "Main Course",
-    },
-    {
-      id: "2",
-      name: "Grilled Chicken",
-      price: 15.99,
-      category: "Main Course",
-    },
-    {
-      id: "3",
-      name: "Caesar Salad",
-      price: 8.99,
-      category: "Appetizer",
-    },
-  ];
+  const { data: itemList } = useQuery({
+    queryKey: ["foodItems"],
+    queryFn: getAllFoodItem,
+  });
+
+  const { data: tableList } = useQuery({
+    queryKey: ["tableLists"],
+    queryFn: getAllTable,
+  });
+
+  console.log(tableList);
 
   const tables: Table[] = [
-    { id: 1, status: "Available" },
-    { id: 2, status: "Available" },
-    { id: 3, status: "Available" },
-    { id: 4, status: "Available" },
+    { _id: 1, tableNumber: 1, capacity: 2, status: "Available" },
+    { _id: 2, tableNumber: 1, capacity: 2, status: "Available" },
+    { _id: 3, tableNumber: 1, capacity: 2, status: "Available" },
+    { _id: 4, tableNumber: 1, capacity: 2, status: "Available" },
   ];
 
   return (
@@ -126,8 +120,8 @@ const MenuAndTables: React.FC = () => {
               <h2 className="text-2xl font-bold">{activeTab} Management</h2>
               <p className="text-sm text-gray-500 mt-1">
                 {activeTab === "Menu Items"
-                  ? `Total Items: ${menuItems.length} | Categories: 2`
-                  : `Total: ${tables.length} | Available: ${tables.filter((t) => t.status === "Available").length} | Occupied: 0`}
+                  ? `Total Items: ${itemList?.length ?? 0} | Categories: ${(itemList ?? []).filter((i: MenuItem) => i.category).length}`
+                  : `Total: ${(tableList ?? []).length} | Available: ${(tableList ?? []).filter((t: Table) => t.status === "Available").length} | Occupied: ${tableList.filter((t: Table) => t.status === "Occupied")}`}
               </p>
             </div>
             <button
@@ -142,22 +136,22 @@ const MenuAndTables: React.FC = () => {
           {/* Conditional Content Rendering */}
           {activeTab === "Menu Items" ? (
             <div className="space-y-12">
-              {["Main Course", "Appetizer"].map((cat) => (
-                <section key={cat}>
+              {(itemList ?? [])?.map(({ category }: MenuItem) => (
+                <section key={category}>
                   <h3 className="text-lg font-bold mb-6 border-b border-gray-100 pb-2">
-                    {cat}
+                    {category}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {menuItems
-                      .filter((item) => item.category === cat)
-                      .map((item) => (
+                    {(itemList ?? [])
+                      .filter((item: MenuItem) => item.category === category)
+                      .map((item: MenuItem) => (
                         <div
-                          key={item.id}
+                          key={item._id}
                           className="group border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all"
                         >
                           <div className="p-5">
                             <h4 className="font-bold text-gray-900">
-                              {item.name}
+                              {item.itemName}
                             </h4>
                             <p className="text-orange-500 font-bold text-lg mt-1">
                               ${item.price}
@@ -180,17 +174,19 @@ const MenuAndTables: React.FC = () => {
           ) : (
             /* Tables Grid */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {tables.map((table) => (
+              {(tableList ?? []).map((table: Table) => (
                 <div
-                  key={table.id}
+                  key={table._id}
                   className="border border-gray-200 rounded-2xl p-8 flex flex-col items-center hover:border-orange-200 transition-colors"
                 >
                   <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                     <span className="text-2xl font-bold text-gray-400">
-                      {table.id}
+                      {table.tableNumber}
                     </span>
                   </div>
-                  <h4 className="font-bold text-lg mb-2">Table {table.id}</h4>
+                  <h4 className="font-bold text-lg mb-2">
+                    Capacity {table.capacity}
+                  </h4>
                   <span className="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full mb-6 uppercase tracking-wider">
                     {table.status}
                   </span>
@@ -204,7 +200,11 @@ const MenuAndTables: React.FC = () => {
         </div>
       </div>
       {openForm === true ? (
-        <AddItemModal isOpen onClose={() => setOpenForm(!openForm)} />
+        <AddItemModal
+          isOpen
+          section={activeTab}
+          onClose={() => setOpenForm(!openForm)}
+        />
       ) : (
         ""
       )}

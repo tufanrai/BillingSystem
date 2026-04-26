@@ -19,9 +19,7 @@ export const signUpSchema = yup.object({
     .string()
     .required("please enter your email")
     .email("please enter a valid email"),
-  restaurantName: yup
-    .string()
-    .required("please enter the name of your restaurant"),
+  restaurant: yup.string().required("please enter the name of your restaurant"),
   password: yup
     .string()
     .required("please enter a password")

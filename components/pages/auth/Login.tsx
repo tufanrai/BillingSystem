@@ -40,8 +40,8 @@ const Login = () => {
     onSuccess: (data) => {
       if (!data) return;
       toast.success(data.message);
-      Cookies.set("token", data.data.token);
-      Cookies.set("user", JSON.stringify(data.data.user));
+      Cookies.set("token", data.token);
+      Cookies.set("user", JSON.stringify(data.user));
       reset();
       setTimeout(() => {
         navigate.replace("/");

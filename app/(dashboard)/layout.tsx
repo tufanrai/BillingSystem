@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 import HoC from "./hoc/HoC";
-import { set } from "react-hook-form";
 
 interface INavItem {
   icon: React.ReactNode;
@@ -92,16 +91,18 @@ function Sidebar() {
     role: "guest",
   });
 
+  useEffect(() => {
+    const user = Cookies.get("user");
+
+    setUserDetail(JSON.parse(user!));
+  }, []);
+
   const onLogOut = () => {
     Cookies.remove("token");
     Cookies.remove("user");
     toast.success("user logged out successfully");
     navigate.replace("/auth/login");
   };
-
-  useEffect(() => {
-    setUserDetail(JSON.parse(Cookies.get("user")!));
-  }, []);
 
   const user: IUser = userDetail ?? {
     name: "Guest",
