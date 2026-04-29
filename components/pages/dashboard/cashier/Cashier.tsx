@@ -1,39 +1,22 @@
 "use client";
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getAllTable } from "@/app/api/apiRequests";
+import { useRouter } from "next/navigation";
+import { Orders } from "./new-orders/Orders";
 
 // Defining our types for future scalability
 // (Easy to expand when connecting to a MongoDB/Express backend)
 interface Table {
-  id: number;
-  name: string;
+  _id: number;
+  tableNumber: number;
+  location: string;
+  capacity: number;
   status: "Available" | "Occupied" | "Reserved";
 }
 
-// Mock data reflecting the initial state
-const TABLE_DATA: Table[] = [
-  {
-    id: 1,
-    name: "Table 1",
-    status: "Reserved",
-  },
-  {
-    id: 2,
-    name: "Table 2",
-    status: "Available",
-  },
-  {
-    id: 3,
-    name: "Table 3",
-    status: "Occupied",
-  },
-  {
-    id: 4,
-    name: "Table 4",
-    status: "Available",
-  },
-];
-
 const Cashier: React.FC = () => {
+  const navigate = useRouter();
   // Generates the dynamic date string (e.g., "Monday, March 30, 2026")
   const currentDate = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
@@ -41,6 +24,14 @@ const Cashier: React.FC = () => {
     day: "numeric",
     year: "numeric",
   }).format(new Date());
+
+  // Fetch the list of tables.
+  const { data: TABLE_DATA } = useQuery({
+    queryKey: ["AllTables"],
+    queryFn: getAllTable,
+  });
+
+  console.log(TABLE_DATA);
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
@@ -68,24 +59,29 @@ const Cashier: React.FC = () => {
               1 col on mobile -> 2 cols on small screens -> 4 cols on large screens 
             */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {TABLE_DATA.map((table) => (
+              {(TABLE_DATA || []).map((table: Table) => (
                 <button
-                  key={table.id}
+                  key={table._id}
                   className="group flex flex-col items-center p-6 bg-white border border-gray-200 rounded-2xl hover:border-orange-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
-                  onClick={() =>
-                    console.log(`Routing to ${table.name} orders...`)
-                  }
+                  onClick={() => {
+                    localStorage.setItem("table_id", String(table._id));
+                    localStorage.setItem(
+                      "table_number",
+                      String(table.tableNumber),
+                    );
+                    navigate.replace("/cashier/new-orders");
+                  }}
                 >
                   {/* Circular Number Indicator */}
                   <div className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-full mb-4 group-hover:bg-gray-100 transition-colors duration-200">
                     <span className="text-xl font-bold text-gray-900">
-                      {table.id}
+                      {table.tableNumber}
                     </span>
                   </div>
 
                   {/* Table Label */}
                   <span className="text-lg font-bold text-neutral-800 mb-3">
-                    {table.name}
+                    Capacity: {table.capacity}
                   </span>
 
                   {/* Status Badge */}

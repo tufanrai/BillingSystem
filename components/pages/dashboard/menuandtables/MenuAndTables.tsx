@@ -11,7 +11,7 @@ interface MenuItem {
   price: number;
   category: string;
 }
-interface Table {
+export interface Table {
   _id: number;
   tableNumber: number;
   capacity: number;
@@ -83,15 +83,6 @@ const MenuAndTables: React.FC = () => {
     queryKey: ["tableLists"],
     queryFn: getAllTable,
   });
-
-  console.log(tableList);
-
-  const tables: Table[] = [
-    { _id: 1, tableNumber: 1, capacity: 2, status: "Available" },
-    { _id: 2, tableNumber: 1, capacity: 2, status: "Available" },
-    { _id: 3, tableNumber: 1, capacity: 2, status: "Available" },
-    { _id: 4, tableNumber: 1, capacity: 2, status: "Available" },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8 font-sans text-gray-900">

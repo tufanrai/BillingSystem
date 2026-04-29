@@ -7,6 +7,7 @@ import {
   CircleDollarSign,
   Search,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // --- Types ---
 // Ready for your MongoDB schema integration
@@ -73,6 +74,8 @@ const Orders: React.FC = () => {
     "All" | "Pending" | "Completed"
   >("All");
 
+  const navigate = useRouter();
+
   // Mock empty state (can be replaced with actual fetched data)
   const orders: Order[] = [];
 
@@ -89,7 +92,10 @@ const Orders: React.FC = () => {
               View and manage all orders
             </p>
           </div>
-          <button className="inline-flex items-center cursor-pointer justify-center px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm w-full sm:w-auto">
+          <button
+            onClick={() => navigate.replace("/cashier")}
+            className="inline-flex items-center cursor-pointer justify-center px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm w-full sm:w-auto"
+          >
             <ShoppingCart className="w-4 h-4 mr-2" />
             New Order
           </button>
