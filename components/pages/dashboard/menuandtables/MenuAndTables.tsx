@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddItemModal from "../../forms/NewItemForm";
 import { useQuery } from "@tanstack/react-query";
 import { getAllFoodItem, getAllTable } from "@/app/api/apiRequests";
@@ -73,6 +73,7 @@ const MenuAndTables: React.FC = () => {
     "Menu Items",
   );
   const [openForm, setOpenForm] = useState<boolean>(false);
+  const [categories, setCategories] = useState<string[]>([""]);
 
   const { data: itemList } = useQuery({
     queryKey: ["foodItems"],
@@ -83,6 +84,18 @@ const MenuAndTables: React.FC = () => {
     queryKey: ["tableLists"],
     queryFn: getAllTable,
   });
+
+  useEffect(() => {
+    if (itemList) {
+      setCategories(
+        itemList
+          .map((i: MenuItem) => i.category)
+          .reduce((prev: string[], ele: string) =>
+            prev.includes(ele) ? [prev] : [...prev, ele],
+          ),
+      );
+    }
+  }, [itemList]);
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8 font-sans text-gray-900">
@@ -123,18 +136,17 @@ const MenuAndTables: React.FC = () => {
               Add New {activeTab === "Menu Items" ? "Item" : "Table"}
             </button>
           </div>
-
           {/* Conditional Content Rendering */}
           {activeTab === "Menu Items" ? (
             <div className="space-y-12">
-              {(itemList ?? [])?.map(({ category }: MenuItem) => (
-                <section key={category}>
+              {categories.map((c: string) => (
+                <section key={c}>
                   <h3 className="text-lg font-bold mb-6 border-b border-gray-100 pb-2">
-                    {category}
+                    {c}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {(itemList ?? [])
-                      .filter((item: MenuItem) => item.category === category)
+                      .filter((item: MenuItem) => item.category === c)
                       .map((item: MenuItem) => (
                         <div
                           key={item._id}

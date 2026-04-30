@@ -83,3 +83,20 @@ export const foodItemSchema = yup.object({
   price: yup.number().required("please enter the price of the food"),
   category: yup.string().required("please specify the category of the food"),
 });
+
+// Order bill
+const arryaOfItem = yup.object({
+  itemName: yup.string().required("please pass the name of the food item"),
+  price: yup.number().required("please pass the price of the food item"),
+  quantity: yup.number().required("please pass the quantity of the item"),
+});
+
+export const orderBill = yup.object({
+  restaurantId: yup.string().required("please pass the restaurant id"),
+  tableId: yup.string().required("please pass the table id"),
+  items: yup
+    .array()
+    .of(arryaOfItem)
+    .min(1, "You must have at least one food item on the order list")
+    .required("please pass the array of selected food items"),
+});

@@ -6,6 +6,7 @@ import { IFoodItem, ITable } from "@/components/pages/forms/NewItemForm";
 import { ISignUp } from "@/components/pages/auth/SignUp";
 import Cookies from "js-cookie";
 import axios from "axios";
+import { IOrderBill } from "@/components/pages/dashboard/cashier/new-orders/Orders";
 
 // Login request
 export const LogUser = async (data: ILogin) => {
@@ -116,5 +117,15 @@ export const addTable = async (data: ITable) => {
     return response;
   } catch (err: any) {
     return err;
+  }
+};
+
+// Bill
+export const placeNewOrder = async (data: IOrderBill) => {
+  try {
+    const response = await axiosInstance.post("/orders", data);
+    return response.data;
+  } catch (err: any) {
+    return err.message;
   }
 };

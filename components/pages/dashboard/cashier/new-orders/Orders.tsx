@@ -1,16 +1,21 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   ArrowLeft,
   Search,
   Plus,
+  Minus,
+  Trash2,
   ShoppingCart,
   Banknote,
   CreditCard,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { getAllFoodItem } from "@/app/api/apiRequests";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getAllFoodItem, placeNewOrder } from "@/app/api/apiRequests";
 import { useRouter } from "next/navigation";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { orderBill } from "@/components/utils/schema/auth-schema";
+import { useForm } from "react-hook-form";
 
 // --- Type Definitions ---
 interface MenuItem {
@@ -21,9 +26,15 @@ interface MenuItem {
   image?: string;
 }
 
-interface props {
-  id?: number;
-  tableNumber?: number;
+interface IItem {
+  itemName: string;
+  price: number;
+  quantity: number;
+}
+export interface IOrderBill {
+  restaurantId?: string;
+  tableId?: string;
+  items: IItem[];
 }
 
 interface CartItem extends MenuItem {
@@ -40,14 +51,36 @@ export const Orders = () => {
   const [tableNumber, setTableNumber] = useState<string>("");
   const [tableId, setTableId] = useState<string>("");
 
+  // Query data
   const { data: MENU_ITEMS } = useQuery({
     queryKey: ["MenuItem"],
     queryFn: getAllFoodItem,
   });
 
+  // Mutate data
+  const {
+    reset,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(orderBill),
+  });
+
+  const { mutate, isPending, isError } = useMutation({
+    mutationFn: placeNewOrder,
+    mutationKey: ["newOrder"],
+  });
+
+  // Get the table id and number for the localStorage
+  useEffect(() => {
+    setTableNumber(localStorage.getItem("table_number") ?? "0");
+    setTableId(localStorage.getItem("table_id") ?? "");
+  }, []);
+
   // Group items by category and filter by search query
   const filteredAndGroupedItems = useMemo<GroupedItems>(() => {
-    const filtered = (MENU_ITEMS || []).filter((item: MenuItem) =>
+    const filtered = (MENU_ITEMS || [])?.filter((item: MenuItem) =>
       item.itemName.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
@@ -58,7 +91,7 @@ export const Orders = () => {
       acc[item.category].push(item);
       return acc;
     }, {});
-  }, [searchQuery]);
+  }, [searchQuery, MENU_ITEMS]);
 
   // Cart Calculations
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -83,8 +116,36 @@ export const Orders = () => {
     });
   };
 
+  // --- New Cart Control Handlers ---
+  const handleIncreaseQuantity = (id: number) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item._id === id ? { ...item, quantity: item.quantity + 1 } : item,
+      ),
+    );
+  };
+
+  const handleDecreaseQuantity = (id: number) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item._id === id && item.quantity > 1
+          ? { ...item, quantity: item.quantity - 1 }
+          : item,
+      ),
+    );
+  };
+
+  const handleRemoveItem = (id: number) => {
+    setCart((prev) => prev.filter((item) => item._id !== id));
+  };
+
+  // Handle submit Bill.
+  const createBill = (data: IOrderBill) => {
+    console.log(data);
+  };
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA] p-4 md:p-6 lg:p-8 font-sans text-gray-800">
+    <div className="min-h-screen p-4 md:p-6 lg:p-8 font-sans text-gray-800">
       {/* Header Section */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div>
@@ -136,11 +197,12 @@ export const Orders = () => {
                     {items.map((item) => (
                       <div
                         key={item._id}
-                        className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white"
+                        onClick={() => handleAddToCart(item)}
+                        className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white cursor-pointer"
                       >
                         <div className="flex items-center gap-4">
                           <img
-                            src={item.image}
+                            src={item.image || "/api/placeholder/64/64"}
                             alt={item.itemName}
                             className="w-16 h-16 rounded-lg object-cover bg-gray-100"
                           />
@@ -149,12 +211,11 @@ export const Orders = () => {
                               {item.itemName}
                             </h4>
                             <p className="text-orange-500 font-semibold text-sm">
-                              ${item?.price}
+                              ${Number(item?.price).toFixed(2)}
                             </p>
                           </div>
                         </div>
                         <button
-                          onClick={() => handleAddToCart(item)}
                           className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
                           aria-label={`Add ${item.itemName} to cart`}
                         >
@@ -170,13 +231,18 @@ export const Orders = () => {
         </main>
 
         {/* Right Column: Cart & Checkout (Sticky on Desktop) */}
-        <aside className="w-full lg:w-[400px] flex flex-col gap-6 lg:sticky lg:top-6 h-fit">
+        <form
+          onSubmit={handleSubmit(createBill)}
+          className="w-full lg:w-[450px] flex flex-col gap-6 lg:sticky lg:top-6 h-fit"
+        >
           {/* Cart Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
               <div className="flex items-center gap-2">
                 <ShoppingCart size={20} className="text-orange-500" />
-                <h2 className="font-semibold text-gray-900">Table 1</h2>
+                <h2 className="font-semibold text-gray-900">
+                  Table {tableNumber}
+                </h2>
               </div>
               <span className="bg-orange-500 text-white text-xs font-medium px-2.5 py-1 rounded-full">
                 {totalItems} items
@@ -194,18 +260,58 @@ export const Orders = () => {
                   <p className="text-sm">No items added yet</p>
                 </>
               ) : (
-                <div className="w-full flex-1 overflow-y-auto max-h-[300px] space-y-3 pr-2">
+                <div className="w-full flex-1 overflow-y-auto max-h-[350px] space-y-3 pr-2 scrollbar-thin">
                   {cart.map((item) => (
                     <div
                       key={item._id}
-                      className="flex justify-between items-center text-sm"
+                      className="flex items-center gap-3 p-3 bg-[#F4F6F9] rounded-xl transition-all"
                     >
-                      <span className="text-gray-800">
-                        {item.quantity}x {item.itemName}
-                      </span>
-                      <span className="font-medium">
+                      <img
+                        src={item.image || "/api/placeholder/48/48"}
+                        alt={item.itemName}
+                        className="w-12 h-12 rounded-lg object-cover bg-gray-200 flex-shrink-0"
+                      />
+
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm text-gray-900 truncate">
+                          {item.itemName}
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          ${Number(item.price).toFixed(2)} each
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 ml-auto">
+                        <button
+                          onClick={() => handleDecreaseQuantity(item._id)}
+                          className="w-7 h-7 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50 text-gray-600 transition-colors shadow-sm"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="w-4 text-center text-sm font-medium text-gray-900">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => handleIncreaseQuantity(item._id)}
+                          className="w-7 h-7 flex items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50 text-gray-600 transition-colors shadow-sm"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => handleRemoveItem(item._id)}
+                        className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors mx-1"
+                        aria-label="Remove item"
+                      >
+                        <Trash2 size={16} strokeWidth={2.5} />
+                      </button>
+
+                      <div className="font-bold text-sm text-gray-900 min-w-[55px] text-right">
                         ${(item.price * item.quantity).toFixed(2)}
-                      </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -282,7 +388,7 @@ export const Orders = () => {
               )}
             </div>
           </div>
-        </aside>
+        </form>
       </div>
     </div>
   );
