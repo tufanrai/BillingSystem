@@ -10,12 +10,10 @@ import {
   Banknote,
   CreditCard,
 } from "lucide-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getAllFoodItem, placeNewOrder } from "@/app/api/apiRequests";
 import { useRouter } from "next/navigation";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { orderBill } from "@/components/utils/schema/auth-schema";
-import { useForm } from "react-hook-form";
+import io, { Manager } from "socket.io-client";
 
 // --- Type Definitions ---
 interface MenuItem {
@@ -44,6 +42,7 @@ interface CartItem extends MenuItem {
 type GroupedItems = Record<string, MenuItem[]>;
 
 export const Orders = () => {
+  const socket = io("http://localhost:5002");
   const navigate = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -58,19 +57,17 @@ export const Orders = () => {
   });
 
   // Mutate data
-  const {
-    reset,
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(orderBill),
+  socket.on("connect", () => {
+    console.log("Connected:", socket.id);
   });
 
-  const { mutate, isPending, isError } = useMutation({
-    mutationFn: placeNewOrder,
-    mutationKey: ["newOrder"],
-  });
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user")!);
+    socket.emit("joinRestaruant", {
+      restaurantId: user?.restaurantId ?? "",
+      role: user?.role ?? "",
+    });
+  }, []);
 
   // Get the table id and number for the localStorage
   useEffect(() => {
@@ -231,10 +228,7 @@ export const Orders = () => {
         </main>
 
         {/* Right Column: Cart & Checkout (Sticky on Desktop) */}
-        <form
-          onSubmit={handleSubmit(createBill)}
-          className="w-full lg:w-[450px] flex flex-col gap-6 lg:sticky lg:top-6 h-fit"
-        >
+        <form className="w-full lg:w-[450px] flex flex-col gap-6 lg:sticky lg:top-6 h-fit">
           {/* Cart Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
